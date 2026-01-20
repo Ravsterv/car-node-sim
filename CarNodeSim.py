@@ -2,7 +2,7 @@
 import math
 import random
 
-
+# Will be changed later just here to hold for now
 MAX_TURN_LARGE = 100
 MAX_TURN_MEDIUM = 50
 MAX_TURN_SMALL = 10
@@ -22,6 +22,9 @@ class Node:
 
     def get_neighbors(self):
         return self._neighbors
+
+    def get_weights(self):
+        return self._weights
 
     def get_x_y(self):
         return self._x, self._y
@@ -94,6 +97,90 @@ class NodeMap:
         :param target: The target node the car wants to travel to
         :return: Path of nodes to target node
         """
+        #TODO Implement shortest path algo here
+
+        # Will need a seperate array showing the weighting to the node
+        # Use of dictionary might be useful
+        # Will have to think how this will work
+        # Will need array of already visited nodes
+        # The checker ignores any visited Nodes
+
+        # Steps
+        # 1. Create temporary dictionary holding NodeID as key and the components being
+        # Weighting: Weighting of current from source to now
+        # Parent Node: Tracks the current Parent Node
+        # 2. Start at starting node and all other nodes connected to starting are added to the toVisit list (weight, node)
+        # 3. Sort the list in order of weight and then pop the first node out from it and use that node
+        # 4. From this node, determine weights of connected nodes and repeat again
+
+        # End condition: No more nodes exist in the toVisit list or Target node is identified
+        # End Step: Start from beginning node and then progress following the trail of parents till it reaches
+        # the target node after calculations
+        # Save these nodes traveled to a list and pass that  to the car as the path
+
+        toVisit = [[0, start.get_id()]]
+        visited = []
+
+        weight_parents = {}
+
+        for node in self._nodes:
+            weight_parents[node.get_id()] = [None, None] # Weight to node from start, parent Node
+
+        while len(toVisit) != 0:
+            # Do loop
+            current_node = toVisit.pop(0)
+            if current_node[1] == target:
+                break
+
+            neighbors = self.find_node(current_node[1]).get_neighbors()
+            weights = self.find_node(current_node[1]).get_weights()
+
+            for index, neighbor in enumerate(neighbors):
+                # Skip neighbor if its already been visited
+                if neighbor in visited:
+                    continue
+
+                # Set weight and parent node to current node if no previous
+                # Will make duplicates if target node seen by another node in the toVisit list
+                if weight_parents[neighbor][0] is None:
+                    weight_parents[neighbor][0] = current_node[0] + weights[index]
+                    weight_parents[neighbor][1] = current_node[1]
+                    toVisit.append([weight_parents[neighbor][0], current_node[1]])
+
+                else:
+                    # Need to stop duplication of nodes
+                    if current_node[0] + weights[index] < weight_parents[neighbor][0]:
+                        toVisitIndex = toVisit.index([weight_parents[neighbor][0], neighbor])
+                        weight_parents[neighbor][0] = current_node[0] + weights[index]
+                        weight_parents[neighbor][1] = current_node[1]
+
+                        toVisit[toVisitIndex] = [weight_parents[neighbor][0], current_node[1]]
+
+            visited.append(current_node[1])
+            toVisit = sorted(toVisit)
+
+        # Now to process the parent tree saved in weights_parent
+
+        path = [target.get_id()]
+        selected_node = target.get_id()
+
+        while selected_node != start:
+            parent_node = weight_parents[selected_node][1]
+
+            selected_node = parent_node
+
+            path.append(parent_node)
+
+        print(path)
+
+
+
+
+
+
+
+
+
 
     def select_random_node(self, current_node):
         chosen_node = random.choice(self._nodes)
@@ -134,6 +221,7 @@ class Initializer:
 
         Map.add_nodes(nodes)
 
+
 class Car:
     """
     Car will be the class that defines the agent that follows a path given to it by the NodeMap
@@ -150,6 +238,7 @@ class Car:
         self._acceleration = 1
         self._max_speed = 4
 
+    # TODO Implement step to allow car to accelerate, turn towards current target node and tick nodes off its path
 
 
 class Simulation:
@@ -161,6 +250,7 @@ class Simulation:
         self._nodeMap = nodeMap
         self._cars = cars
 
+    # TODO implement simulation ticks here and how car operates
 
 
 if __name__ == "__main__":
