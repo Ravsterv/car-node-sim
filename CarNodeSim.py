@@ -145,16 +145,17 @@ class NodeMap:
                 if weight_parents[neighbor][0] is None:
                     weight_parents[neighbor][0] = current_node[0] + weights[index]
                     weight_parents[neighbor][1] = current_node[1]
-                    toVisit.append([weight_parents[neighbor][0], current_node[1]])
+                    toVisit.append([weight_parents[neighbor][0], neighbor])
 
                 else:
                     # Need to stop duplication of nodes
                     if current_node[0] + weights[index] < weight_parents[neighbor][0]:
                         toVisitIndex = toVisit.index([weight_parents[neighbor][0], neighbor])
+
                         weight_parents[neighbor][0] = current_node[0] + weights[index]
                         weight_parents[neighbor][1] = current_node[1]
 
-                        toVisit[toVisitIndex] = [weight_parents[neighbor][0], current_node[1]]
+                        toVisit[toVisitIndex] = [weight_parents[neighbor][0], neighbor]
 
             visited.append(current_node[1])
             toVisit = sorted(toVisit)
@@ -171,14 +172,11 @@ class NodeMap:
 
             path.append(parent_node)
 
+        path = path[::-1]
+
         print(path)
 
-
-
-
-
-
-
+        return path
 
 
 
@@ -256,11 +254,21 @@ class Simulation:
 if __name__ == "__main__":
     citymap = NodeMap()
 
-    city_maker = Initializer("nodemaps/map1")
+    city_maker = Initializer("nodemaps/map2complex")
 
     city_maker.create_nodelist(citymap)
 
     citymap.generate_node_weights()
+
+    starter_node = "1"
+
+    chosen_node = citymap.select_random_node(starter_node)
+
+    true_start_node = citymap.select_random_node(chosen_node)
+
+    print(f"Start: {true_start_node}")
+    print(f"End: {chosen_node}")
+    citymap.find_shortest_path(true_start_node, chosen_node)
 
     print(citymap)
 
